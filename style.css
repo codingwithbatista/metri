@@ -1,0 +1,30 @@
+/* Metri — tema estrutural. Cores/fontes vêm do metri.conf via runtime. */
+window.desktop-widget {
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.panel {
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 14px;
+}
+
+.section {
+    margin: 2px 0;
+}
+
+.metric-title {
+    font-weight: 700;
+    letter-spacing: 1px;
+    font-size: 11px;
+    margin-bottom: 2px;
+}
+
+.metric-value {
+    font-family: monospace;
+}
+
+separator {
+    margin: 4px 0;
+    background-color: rgba(255, 255, 255, 0.06);
+}

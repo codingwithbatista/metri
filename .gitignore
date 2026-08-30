@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+
+# empacotamento
+*.deb
+dist/
+build/
+
+*.egg-info/
+.venv/
+
+# tooling interno do opencode
+.opencode/
+opencode.json
