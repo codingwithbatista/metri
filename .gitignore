@@ -5,6 +5,7 @@ __pycache__/
 *.deb
 dist/
 build/
+packaging/deb/
 
 *.egg-info/
 .venv/

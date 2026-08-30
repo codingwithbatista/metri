@@ -4,22 +4,25 @@ import gi
 
 gi.require_version("Gtk", "3.0")
 gi.require_version("Gdk", "3.0")
-from gi.repository import Gtk, Gdk, GObject
+from gi.repository import Gtk, Gdk, GObject, GLib
 
 from . import config as config_mod
 from . import sensors
 from . import widgets
 
-STYLE_FILE = config_mod.APP_DIR / "style.css"
+STYLE_FILE = config_mod.RESOURCE_DIR / "style.css"
 
 
 def _load_styles(cfg):
     base = Gtk.CssProvider()
-    base.load_from_path(str(STYLE_FILE))
-    Gtk.StyleContext.add_provider_for_screen(
-        Gdk.Screen.get_default(), base,
-        Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
-    )
+    try:
+        base.load_from_path(str(STYLE_FILE))
+        Gtk.StyleContext.add_provider_for_screen(
+            Gdk.Screen.get_default(), base,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
+        )
+    except GLib.Error:
+        pass
 
     colors = cfg["colors"]
     runtime = (

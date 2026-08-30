@@ -1,8 +1,20 @@
 """Parser do metri.conf — 100% stdlib."""
 
+import sys
 from pathlib import Path
 
-APP_DIR = Path(__file__).resolve().parent.parent
+RESOURCE_DIR = Path(__file__).resolve().parent.parent
+USER_CONFIG_DIR = Path.home() / ".config" / "metri"
+USER_CONFIG_FILE = USER_CONFIG_DIR / "metri.conf"
+SHARE_CONFIG_FILE = Path("/usr/share/metri/metri.conf")
+
+
+def _template_config_file():
+    """Template do metri.conf: na raiz (dev) ou em /usr/share/metri (instalado)."""
+    local = RESOURCE_DIR / "metri.conf"
+    if local.exists():
+        return local
+    return SHARE_CONFIG_FILE
 
 VALID_SECTIONS = {"system", "cpu", "memory", "disk", "network", "battery", "processes"}
 
@@ -55,9 +67,32 @@ def _deep_merge(base, override):
     return merged
 
 
+def _ensure_user_config():
+    """Na primeira execução, cria o metri.conf do usuário a partir do template."""
+    template = _template_config_file()
+    try:
+        if not USER_CONFIG_DIR.exists():
+            USER_CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+        if not USER_CONFIG_FILE.exists() and template.exists():
+            USER_CONFIG_FILE.write_text(template.read_text())
+    except OSError:
+        pass
+
+
+def _resolve_config_path(path):
+    """Define onde o metri.conf será lido: CLI > usuário > template."""
+    if path:
+        return Path(path)
+    if not USER_CONFIG_FILE.exists():
+        _ensure_user_config()
+    if USER_CONFIG_FILE.exists():
+        return USER_CONFIG_FILE
+    return _template_config_file()
+
+
 def load(path=None):
     """Lê o metri.conf e devolve a config fundida com os defaults."""
-    cfg_path = Path(path) if path else APP_DIR / "metri.conf"
+    cfg_path = _resolve_config_path(path)
     override = {}
     try:
         with open(cfg_path) as f:
@@ -76,7 +111,9 @@ def load(path=None):
                     target = target.setdefault(part, {})
                 target[parts[-1]] = _coerce(parts[-1], value)
     except OSError:
-        pass
+        if path is not None:
+            print(f"Metri: aviso — config não encontrado em {path}, usando defaults",
+                  file=sys.stderr)
 
     merged = _deep_merge(DEFAULTS, override)
 

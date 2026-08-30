@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Metri
+GenericName=System metrics widget
+Comment=Widget de métricas de sistema estilo Conky
+Exec=metri
+Icon=metri
+Terminal=false
+Categories=System;Utility;
+StartupNotify=false

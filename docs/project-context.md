@@ -117,6 +117,21 @@ Arquivo texto simples ao lado do app. Ver schema completo na skill
 `monitor`, `font`/`font_size`, `colors` (`background`, `text`, `accent`),
 `network_iface`, `width`, `margin`, `window_type` (`dock`|`desktop`).
 
+#### Precedência de caminhos (empacotamento .deb)
+
+A partir do empacotamento, o config passou a ser resolvido com a precedência:
+
+1. `-c/--config <path>` (override via CLI).
+2. `~/.config/metri/metri.conf` (config do usuário — criado na 1ª execução a
+   partir do template, nunca sobrescrito).
+3. Template: `metri.conf` na raiz (dev) ou `/usr/share/metri/metri.conf`
+   (instalado).
+
+**Nota de workflow (dev):** na primeira execução, a cópia do usuário em
+`~/.config/metri/metri.conf` é criada e passa a valer — editar o `metri.conf`
+da raiz **não** terá mais efeito. Para iterar sobre a config em dev, use
+`./main.py -c metri.conf`.
+
 ## 5. Riscos e mitigação
 
 - **KWin pode dar foco inicial à janela**: mitigado com `type_hint DOCK` (ou
