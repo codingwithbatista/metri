@@ -27,8 +27,8 @@ def _fmt_rate(bps):
     if bps is None:
         return "—"
     n = float(bps)
-    for unit in ("B/s", "KB/s", "MB/s", "GB/s"):
-        if abs(n) < 1024 or unit == "GB/s":
+    for unit in ("B/s", "KiB/s", "MiB/s", "GiB/s"):
+        if abs(n) < 1024 or unit == "GiB/s":
             return f"{n:.1f} {unit}"
         n /= 1024
     return "—"
