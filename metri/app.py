@@ -64,6 +64,7 @@ class Widget(Gtk.Window):
         self.set_focus_on_map(False)
         self.set_resizable(False)
         self.stick()
+        self.connect("map-event", self._on_map)
         self.connect("destroy", self._on_destroy)
 
         root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
@@ -87,12 +88,18 @@ class Widget(Gtk.Window):
 
     def start(self):
         self.show_all()
+        self.set_keep_below(True)
         self.stick()
         self._place()
         self._timer_id = GObject.timeout_add(
             int(self.cfg["refresh"] * 1000), self._refresh
         )
         self._refresh()
+
+    def _on_map(self, *_):
+        self.set_keep_below(True)
+        self.stick()
+        return False
 
     def _place(self):
         screen = Gdk.Screen.get_default()

@@ -75,13 +75,19 @@ contagem de processos via `os.listdir('/proc')`.
 5. **Coleta**: módulo de sensores puro (sem GTK), retornando dicionários;
    detalhes na skill `metricas-sistema-linux`. **Convenção: coletores retornam
    bytes** (mem/swap/rss convertidos de kB ×1024; disco e rede já em bytes).
-6. **`window_type` = DOCK por padrão, configurável** (`dock`|`desktop`):
-   - O hint `DESKTOP` sob KWin faz o WM tratar a janela como parte do papel de
-     parede. Ao clicar fora da janela (ou no show-desktop), o desktop é ativado
-     e a janela é rebaixada para trás do papel — ficando invisível. Relato
-     clássico: *"Clicking on desktop makes GTK3 window disappear"*.
-   - `DOCK` + `keep_below` manteve o widget sempre visível acima do papel de
-     parede (mas abaixo das demais janelas). É o default recomendado.
+6. **`window_type` = DESKTOP por padrão, configurável** (`desktop`|`dock`):
+   - **Evidência (xprop, X11/DDE/KWin, 2026-08-30):** a hint `DOCK` é tratada
+     pelo DDE como camada de painel (superior) — a janela fica **acima** das
+     janelas NORMAL na pilha (`_NET_CLIENT_LIST_STACKING`), mesmo com
+     `_NET_WM_STATE_BELOW` ativo. A hint `DESKTOP` coloca a janela **no fundo
+     de tudo**, abaixo de todas as aplicações, com `Map State: IsViewable`.
+   - **Trade-off:** com `DESKTOP`, ao clicar fora da janela (ou no show-desktop)
+     o KWin pode rebaixar a janela para trás do papel de parede, tornando-a
+     invisível — problema clássico ("*Clicking on desktop makes GTK3 window
+     disappear*"). Quem preferir não "sumir" ao clicar fora usa `dock`, aceitando
+     ficar acima das janelas normais.
+   - O `keep_below` é **reaplicado após o mapeamento** (`map-event` + no `start`)
+     para reforçar o estado `BELOW` em ambos os hints.
    - A escolha é feita no `metri.conf` (`window_type`), sem tocar no código.
 
 ## 4. Plano do app

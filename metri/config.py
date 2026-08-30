@@ -36,7 +36,7 @@ DEFAULTS = {
         "system", "cpu", "memory", "disk", "network", "battery", "processes",
     ],
     "network_iface": "wlo1",
-    "window_type": "dock",
+    "window_type": "desktop",
 }
 
 _INT_KEYS = {"width", "margin", "font_size", "monitor"}
