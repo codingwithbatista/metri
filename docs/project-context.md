@@ -86,8 +86,17 @@ contagem de processos via `os.listdir('/proc')`.
      invisível — problema clássico ("*Clicking on desktop makes GTK3 window
      disappear*"). Quem preferir não "sumir" ao clicar fora usa `dock`, aceitando
      ficar acima das janelas normais.
-   - O `keep_below` é **reaplicado após o mapeamento** (`map-event` + no `start`)
-     para reforçar o estado `BELOW` em ambos os hints.
+   - **Solução escolhida (opção 4, portável via `.deb`):** manter `desktop` como
+     default e re-exibir a janela automaticamente. Um timer de “resgate”
+     (`_rescue_desktop`, a cada 1s) lê `_NET_SHOWING_DESKTOP` via `xprop` e, ao
+     sair do show-desktop (ou se a janela estiver desmapada), recoloca a janela
+     no topo da camada desktop com `raise_()`/`present()` + `_place()` — sem pedir
+     foco e ainda abaixo das janelas normais (por causa do `keep_below`). O
+     resgate fica inerte durante o show-desktop para evitar flicker/briga com o WM.
+     Isto funciona em qualquer sistema (exige o binário `xprop`, do pacote
+     `x11-utils`, adicionado ao `Depends` do `.deb`).
+   - O `keep_below` é **reaplicado após o mapeamento** (`map-event` + no `start`,
+     e também após o resgate) para reforçar o estado `BELOW` em ambos os hints.
    - A escolha é feita no `metri.conf` (`window_type`), sem tocar no código.
 
 ## 4. Plano do app

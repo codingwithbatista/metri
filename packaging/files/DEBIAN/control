@@ -4,7 +4,7 @@ Section: utils
 Priority: optional
 Architecture: amd64
 Maintainer: Paulo Batista <paulobatista@programmer.net>
-Depends: python3 (>= 3.12), python3-gi, gir1.2-gtk-3.0
+Depends: python3 (>= 3.12), python3-gi, gir1.2-gtk-3.0, x11-utils
 Description: Conky-style system metrics desktop widget
  Coleta métricas do sistema Linux (CPU, memória, disco, rede, bateria,
  temperatura, processos) via /proc e /sys e as exibe de forma estilizada na

@@ -1,5 +1,7 @@
 """Janela desktop do Metri — transparência, ancoragem e loop de atualização."""
 
+import subprocess
+
 import gi
 
 gi.require_version("Gtk", "3.0")
@@ -11,6 +13,18 @@ from . import sensors
 from . import widgets
 
 STYLE_FILE = config_mod.RESOURCE_DIR / "style.css"
+
+
+def _showing_desktop():
+    """True se o WM estiver no modo 'mostrar área de trabalho' (show-desktop)."""
+    try:
+        out = subprocess.run(
+            ["xprop", "-root", "_NET_SHOWING_DESKTOP"],
+            capture_output=True, text=True, timeout=1,
+        ).stdout
+        return out.strip().endswith("= 1")
+    except (subprocess.TimeoutExpired, OSError, ValueError):
+        return False
 
 
 def _load_styles(cfg):
@@ -46,6 +60,8 @@ class Widget(Gtk.Window):
         super().__init__(type=Gtk.WindowType.TOPLEVEL)
         self.cfg = cfg
         self._timer_id = None
+        self._rescue_id = None
+        self._desktop_shown = False
 
         screen = Gdk.Screen.get_default()
         visual = screen.get_rgba_visual()
@@ -56,7 +72,7 @@ class Widget(Gtk.Window):
         self.set_skip_taskbar_hint(True)
         self.set_skip_pager_hint(True)
         hint = (Gdk.WindowTypeHint.DOCK
-                if self.cfg.get("window_type", "dock") == "dock"
+                if self.cfg.get("window_type", "desktop") == "dock"
                 else Gdk.WindowTypeHint.DESKTOP)
         self.set_type_hint(hint)
         self.set_keep_below(True)
@@ -94,7 +110,26 @@ class Widget(Gtk.Window):
         self._timer_id = GObject.timeout_add(
             int(self.cfg["refresh"] * 1000), self._refresh
         )
+        if self.cfg.get("window_type", "desktop") == "desktop":
+            self._rescue_id = GObject.timeout_add(1000, self._rescue_desktop)
         self._refresh()
+
+    def _rescue_desktop(self):
+        # Janela do tipo desktop pode ser recolhida/coberta pelo papel de parede
+        # ao ativar o show-desktop. Quando o usuário sai desse modo, recoloca a
+        # janela no topo da camada desktop (sem roubar foco e ainda abaixo das
+        # demais janelas, por causa do keep_below).
+        shown = _showing_desktop()
+        if not shown and (self._desktop_shown or not self.get_mapped()):
+            win = self.get_window()
+            if win is not None and self.get_mapped():
+                win.raise_()  # recoloca no topo da camada sem pedir foco
+            else:
+                self.present()  # remapeia janela recolhida pelo WM
+            self._on_map()
+            self._place()
+        self._desktop_shown = shown
+        return True
 
     def _on_map(self, *_):
         self.set_keep_below(True)
@@ -134,3 +169,6 @@ class Widget(Gtk.Window):
         if self._timer_id is not None:
             GObject.source_remove(self._timer_id)
             self._timer_id = None
+        if self._rescue_id is not None:
+            GObject.source_remove(self._rescue_id)
+            self._rescue_id = None
